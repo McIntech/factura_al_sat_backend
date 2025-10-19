@@ -75,7 +75,7 @@ Thumbs.db
 /rspec_failures.txt
 
 # --- 🧱 Docker / AWS ---
-Dockerfile*
+# Dockerfile  # Comentado - necesitamos el Dockerfile en el repo para GitHub Actions
 docker-compose.yml
 docker-compose.*.yml
 .aws/
