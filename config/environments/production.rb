@@ -20,11 +20,11 @@ Rails.application.configure do
   config.hosts << "mwuqbtaynh.us-east-2.awsapprunner.com"
   # Store uploaded files on the local file system (see config/storage.yml for options).
   # For App Runner, consider using Amazon S3 for persistent storage
-  config.active_storage.service = ENV.fetch('ACTIVE_STORAGE_SERVICE', 'local').to_sym
+  config.active_storage.service = ENV.fetch("ACTIVE_STORAGE_SERVICE", "local").to_sym
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # App Runner handles SSL termination, so we trust the proxy
-  config.force_ssl = ENV.fetch('FORCE_SSL', 'false') == 'true'
+  config.force_ssl = ENV.fetch("FORCE_SSL", "false") == "true"
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
@@ -35,6 +35,8 @@ Rails.application.configure do
 
   # Change to "debug" to log everything (including potentially personally-identifiable information!)
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
+
+  config.hosts << "api.facturaalsat.zampli.com"
 
   # Prevent health checks from clogging up the logs.
   config.silence_healthcheck_path = "/up"
@@ -53,17 +55,17 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = true
 
   # Set host to be used by links generated in mailer templates - should be your actual domain
-  config.action_mailer.default_url_options = { host: ENV['DOMAIN'] || "fiscalapi.com" }
+  config.action_mailer.default_url_options = { host: ENV["DOMAIN"] || "fiscalapi.com" }
 
   # Configure SMTP for email delivery using environment variables
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address:              ENV['SMTP_SERVER'] || 'smtp.gmail.com',
-    port:                 ENV['SMTP_PORT'] || 587,
-    domain:               ENV['SMTP_DOMAIN'] || ENV['DOMAIN'] || 'fiscalapi.com',
-    user_name:            ENV['EMAIL'],
-    password:             ENV['EMAIL_PASSWORD'],
-    authentication:       'plain',
+    address:              ENV["SMTP_SERVER"] || "smtp.gmail.com",
+    port:                 ENV["SMTP_PORT"] || 587,
+    domain:               ENV["SMTP_DOMAIN"] || ENV["DOMAIN"] || "fiscalapi.com",
+    user_name:            ENV["EMAIL"],
+    password:             ENV["EMAIL_PASSWORD"],
+    authentication:       "plain",
     enable_starttls_auto: true
   }
 
@@ -79,8 +81,8 @@ Rails.application.configure do
 
   # Enable DNS rebinding protection and other `Host` header attacks.
   # For App Runner, allow your custom domain
-  config.hosts = ENV.fetch('ALLOWED_HOSTS', '').split(',').presence || nil
-  
+  config.hosts = ENV.fetch("ALLOWED_HOSTS", "").split(",").presence || nil
+
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/health" || request.path == "/up" } }
 end
