@@ -37,6 +37,17 @@ jobs:
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          # Navigate to backend directory if needed
+          cd ${{ github.workspace }}
+          
+          # Check if Dockerfile exists
+          if [ ! -f "Dockerfile" ]; then
+            echo "❌ Dockerfile not found in root directory"
+            echo "📂 Listing directory contents:"
+            ls -la
+            exit 1
+          fi
+          
           # Build Docker image
           echo "🏗️ Building Docker image..."
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
