@@ -17,7 +17,7 @@ Rails.application.configure do
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
-  config.hosts << "mwuqbtaynh.us-east-2.awsapprunner.com"
+
   # Store uploaded files on the local file system (see config/storage.yml for options).
   # For App Runner, consider using Amazon S3 for persistent storage
   config.active_storage.service = ENV.fetch("ACTIVE_STORAGE_SERVICE", "local").to_sym
@@ -35,8 +35,6 @@ Rails.application.configure do
 
   # Change to "debug" to log everything (including potentially personally-identifiable information!)
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
-
-  config.hosts << "api.facturaalsat.zampli.com"
 
   # Prevent health checks from clogging up the logs.
   config.silence_healthcheck_path = "/up"
@@ -80,8 +78,18 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [ :id ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  # For App Runner, allow your custom domain
-  config.hosts = ENV.fetch("ALLOWED_HOSTS", "").split(",").presence || nil
+  # For App Runner, allow your custom domain and App Runner URLs
+  allowed_hosts = [
+    "mwuqbtaynh.us-east-2.awsapprunner.com",  # App Runner URL
+    "api.facturaalsat.zampli.com",             # Custom domain
+    ".awsapprunner.com"                        # Any App Runner domain
+  ]
+
+  # Add hosts from environment variable if present
+  env_hosts = ENV.fetch("ALLOWED_HOSTS", "").split(",").map(&:strip).reject(&:empty?)
+  allowed_hosts.concat(env_hosts) if env_hosts.any?
+
+  config.hosts = allowed_hosts
 
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/health" || request.path == "/up" } }
