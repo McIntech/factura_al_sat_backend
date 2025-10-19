@@ -1,0 +1,22 @@
+<% content_for :title do %>Factura <%= @invoice_number %> - <%= @company_name %><% end %>
+
+<p>Estimado cliente,</p>
+
+<p>
+  Adjunto encontrará la factura electrónica <strong><%= @invoice_number %></strong> 
+  generada por <strong><%= @company_name %></strong>.
+</p>
+
+<p>
+  Le agradecemos su preferencia y quedamos a sus órdenes para cualquier duda o aclaración.
+</p>
+
+<p>
+  Atentamente,<br>
+  <%= @sender_name %><br>
+  <%= @company_name %>
+</p>
+
+<p style="font-size: 12px; color: #777; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
+  Este correo ha sido generado automáticamente. Por favor no responda a este mensaje.
+</p>

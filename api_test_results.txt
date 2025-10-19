@@ -1,0 +1,14 @@
+
+[1;33m=== INICIANDO PRUEBAS API Wed Oct 15 14:31:01 CST 2025 ===[0m
+
+[1;33m=== TEST 0: REGISTRO DE USUARIO ===[0m
+Intentando registrar usuario con email: test5@gmail.com
+Respuesta de registro:
+{"errors":["Email has already been taken","Email has already been taken"]}
+
+[1;33m=== TEST 1: LOGIN ===[0m
+Intentando login con email: test5@gmail.com
+Respuesta guardada en login_response.json
+[0;31m✗ Login falló. No se pudo obtener token.[0m
+Respuesta completa: {"status":{"code":401,"message":"Credenciales inválidas"},"error":"Correo o contraseña incorrectos"}
+

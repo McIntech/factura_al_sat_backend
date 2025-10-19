@@ -1,0 +1,23 @@
+version: 1.0
+runtime: python3
+build:
+  commands:
+    build:
+      - docker build -t fiscalapi-backend .
+run:
+  runtime-version: 3.3
+  command: bundle exec puma -C config/puma.rb
+  network:
+    port: 3000
+    env: PORT
+  env:
+    - name: RAILS_ENV
+      value: production
+    - name: RACK_ENV
+      value: production
+    - name: RAILS_LOG_TO_STDOUT
+      value: "1"
+    - name: RAILS_SERVE_STATIC_FILES
+      value: "true"
+    - name: RUBY_YJIT_ENABLE
+      value: "1"

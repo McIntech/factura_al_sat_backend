@@ -1,0 +1,50 @@
+#!/bin/bash -e
+
+# Docker entrypoint script for Rails + AWS App Runner
+# This script prepares the database and starts the application
+
+# Enable jemalloc for reduced memory usage and latency
+if [ -z "${LD_PRELOAD+x}" ]; then
+    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
+    export LD_PRELOAD
+fi
+
+# Remove any existing server PID file
+rm -f /app/tmp/pids/server.pid
+
+# Function to wait for database to be ready
+wait_for_db() {
+  echo "Waiting for database to be ready..."
+  local max_attempts=30
+  local attempt=1
+  
+  while [ $attempt -le $max_attempts ]; do
+    if bundle exec rails runner "ActiveRecord::Base.connection" 2>/dev/null; then
+      echo "✓ Database is ready!"
+      return 0
+    fi
+    echo "Attempt $attempt/$max_attempts - Database not ready, waiting..."
+    sleep 2
+    attempt=$((attempt + 1))
+  done
+  
+  echo "✗ Database connection timeout after $max_attempts attempts"
+  return 1
+}
+
+# Prepare database if running the main app (not in a one-off command)
+if [ "${1}" == "bundle" ] && [ "${2}" == "exec" ] && [ "${3}" == "puma" ]; then
+  echo "Starting Rails application..."
+  
+  # Wait for database
+  wait_for_db || exit 1
+  
+  # Run database migrations (idempotent)
+  echo "Running database migrations..."
+  bundle exec rails db:prepare
+  
+  echo "✓ Database prepared successfully"
+fi
+
+# Execute the main command
+exec "${@}"
