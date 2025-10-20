@@ -28,10 +28,10 @@ Rails.application.configure do
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
-  
+
   # Configure URL options for ActiveStorage
   Rails.application.routes.default_url_options = {
-    host: 'localhost',
+    host: "localhost",
     port: 3000
   }
 
@@ -43,20 +43,20 @@ Rails.application.configure do
 
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
-  
+
   # Set up SMTP for email delivery
-config.action_mailer.delivery_method = :smtp
-config.action_mailer.smtp_settings = {
-  address:              ENV.fetch('SMTP_SERVER', 'smtp.gmail.com'),
-  port:                 Integer(ENV.fetch('SMTP_PORT', '587')),
-  domain:               ENV.fetch('SMTP_DOMAIN', 'cuiker.com'),
-  user_name:            ENV.fetch('EMAIL', 'soporte@cuiker.com'),
-  password:             ENV['EMAIL_APP_PASSWORD'] || ENV['EMAIL_PASSWORD'], # <- App Password o regular
-  authentication:       'plain',
-  enable_starttls_auto: true,
-  openssl_verify_mode:  OpenSSL::SSL::VERIFY_NONE # Arreglando problemas de SSL en desarrollo
-}
-config.hosts << "mwuqbtaynh.us-east-2.awsapprunner.com"
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address:              ENV.fetch("SMTP_SERVER", "smtp.gmail.com"),
+    port:                 Integer(ENV.fetch("SMTP_PORT", "587")),
+    domain:               ENV.fetch("SMTP_DOMAIN", "cuiker.com"),
+    user_name:            ENV.fetch("EMAIL", "soporte@cuiker.com"),
+    password:             ENV["EMAIL_APP_PASSWORD"] || ENV["EMAIL_PASSWORD"], # <- App Password o regular
+    authentication:       "plain",
+    enable_starttls_auto: true,
+    openssl_verify_mode:  OpenSSL::SSL::VERIFY_NONE # Arreglando problemas de SSL en desarrollo
+  }
+  config.hosts << "mwuqbtaynh.us-east-2.awsapprunner.com"
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 

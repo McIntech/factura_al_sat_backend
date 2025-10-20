@@ -79,17 +79,15 @@ Rails.application.configure do
 
   # Enable DNS rebinding protection and other `Host` header attacks.
   # For App Runner, allow your custom domain and App Runner URLs
-  allowed_hosts = [
-    "mwuqbtaynh.us-east-2.awsapprunner.com",  # App Runner URL
-    "api.facturaalsat.zampli.com",             # Custom domain
-    ".awsapprunner.com"                        # Any App Runner domain
-  ]
-
-  # Add hosts from environment variable if present
+  # Hosts permitidos para App Runner y custom domain
+  config.hosts.clear
+  config.hosts << "mwuqbtaynh.us-east-2.awsapprunner.com" # App Runner URL
+  config.hosts << "api.facturaalsat.zampli.com"           # Custom domain
+  # Permite cualquier subdominio de App Runner (opcional, más abierto)
+  config.hosts << /\.awsapprunner\.com\z/
+  # Agrega hosts extra desde variable de entorno si existen
   env_hosts = ENV.fetch("ALLOWED_HOSTS", "").split(",").map(&:strip).reject(&:empty?)
-  allowed_hosts.concat(env_hosts) if env_hosts.any?
-
-  config.hosts = allowed_hosts
+  env_hosts.each { |h| config.hosts << h } if env_hosts.any?
 
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/health" || request.path == "/up" } }
