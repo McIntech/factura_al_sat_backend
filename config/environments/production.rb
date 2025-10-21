@@ -83,14 +83,11 @@ Rails.application.configure do
   # For App Runner, allow your custom domain and App Runner URLs
   # Hosts permitidos para App Runner y custom domain
   config.hosts.clear
-  config.hosts << 'mwuqbtaynh.us-east-2.awsapprunner.com' # App Runner URL
-  config.hosts << 'api.facturaalsat.zampli.com'           # Custom domain
-  config.hosts << 'localhost:3000' # Custom domain
-  # Permite cualquier subdominio de App Runner (opcional, más abierto)
+  config.hosts << 'fi9wcmsp6k.us-east-2.awsapprunner.com'
+  config.hosts << 'dw70y6k7lwehw.cloudfront.net'
+  config.hosts << 'facturaalsat.com'
+  config.hosts << 'www.facturaalsat.com'
   config.hosts << /\.awsapprunner\.com\z/
-  # Agrega hosts extra desde variable de entorno si existen
-  env_hosts = ENV.fetch('ALLOWED_HOSTS', '').split(',').map(&:strip).reject(&:empty?)
-  env_hosts.each { |h| config.hosts << h } if env_hosts.any?
 
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { ['/health', '/up'].include?(request.path) } }
