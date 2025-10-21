@@ -1,4 +1,4 @@
-require "active_support/core_ext/integer/time"
+require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -13,31 +13,33 @@ Rails.application.configure do
   config.consider_all_requests_local = false
 
   # Cache assets for far-future expiry since they are all digest stamped.
-  config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
+  config.public_file_server.headers = { 'cache-control' => "public, max-age=#{1.year.to_i}" }
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   # For App Runner, consider using Amazon S3 for persistent storage
-  config.active_storage.service = ENV.fetch("ACTIVE_STORAGE_SERVICE", "local").to_sym
+  config.active_storage.service = ENV.fetch('ACTIVE_STORAGE_SERVICE', 'local').to_sym
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # App Runner handles SSL termination, so we trust the proxy
-  config.force_ssl = ENV.fetch("FORCE_SSL", "false") == "true"
+  config.force_ssl = ENV.fetch('FORCE_SSL', 'false') == 'true'
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT with the current request id as a default log tag.
-  config.log_tags = [ :request_id ]
-  config.logger   = ActiveSupport::TaggedLogging.logger(STDOUT)
+  config.log_tags = [:request_id]
+  config.logger = ActiveSupport::Logger.new($stdout)
+  config.logger.formatter = Logger::Formatter.new
+  config.log_level = :info
 
   # Change to "debug" to log everything (including potentially personally-identifiable information!)
-  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
+  config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
 
   # Prevent health checks from clogging up the logs.
-  config.silence_healthcheck_path = "/up"
+  config.silence_healthcheck_path = '/up'
 
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
@@ -53,17 +55,17 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = true
 
   # Set host to be used by links generated in mailer templates - should be your actual domain
-  config.action_mailer.default_url_options = { host: ENV["DOMAIN"] || "fiscalapi.com" }
+  config.action_mailer.default_url_options = { host: ENV['DOMAIN'] || 'fiscalapi.com' }
 
   # Configure SMTP for email delivery using environment variables
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address:              ENV["SMTP_SERVER"] || "smtp.gmail.com",
-    port:                 ENV["SMTP_PORT"] || 587,
-    domain:               ENV["SMTP_DOMAIN"] || ENV["DOMAIN"] || "fiscalapi.com",
-    user_name:            ENV["EMAIL"],
-    password:             ENV["EMAIL_PASSWORD"],
-    authentication:       "plain",
+    address: ENV['SMTP_SERVER'] || 'smtp.gmail.com',
+    port: ENV['SMTP_PORT'] || 587,
+    domain: ENV['SMTP_DOMAIN'] || ENV['DOMAIN'] || 'fiscalapi.com',
+    user_name: ENV['EMAIL'],
+    password: ENV['EMAIL_PASSWORD'],
+    authentication: 'plain',
     enable_starttls_auto: true
   }
 
@@ -75,20 +77,21 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   # Only use :id for inspections in production.
-  config.active_record.attributes_for_inspect = [ :id ]
+  config.active_record.attributes_for_inspect = [:id]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
   # For App Runner, allow your custom domain and App Runner URLs
   # Hosts permitidos para App Runner y custom domain
   config.hosts.clear
-  config.hosts << "mwuqbtaynh.us-east-2.awsapprunner.com" # App Runner URL
-  config.hosts << "api.facturaalsat.zampli.com"           # Custom domain
+  config.hosts << 'mwuqbtaynh.us-east-2.awsapprunner.com' # App Runner URL
+  config.hosts << 'api.facturaalsat.zampli.com'           # Custom domain
+  config.hosts << 'localhost:3000' # Custom domain
   # Permite cualquier subdominio de App Runner (opcional, más abierto)
   config.hosts << /\.awsapprunner\.com\z/
   # Agrega hosts extra desde variable de entorno si existen
-  env_hosts = ENV.fetch("ALLOWED_HOSTS", "").split(",").map(&:strip).reject(&:empty?)
+  env_hosts = ENV.fetch('ALLOWED_HOSTS', '').split(',').map(&:strip).reject(&:empty?)
   env_hosts.each { |h| config.hosts << h } if env_hosts.any?
 
   # Skip DNS rebinding protection for the default health check endpoint.
-  config.host_authorization = { exclude: ->(request) { request.path == "/health" || request.path == "/up" } }
+  config.host_authorization = { exclude: ->(request) { ['/health', '/up'].include?(request.path) } }
 end

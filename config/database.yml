@@ -1,39 +1,20 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  url: <%= ENV["DATABASE_URL"] %>
 
 development:
   <<: *default
-  database: backend_development
-
-test:
-  <<: *default
-  database: backend_test
 
 production:
-  primary: &primary_production
-    <<: *default
-    # Use DATABASE_URL if available (preferred for App Runner / RDS)
-    url: <%= ENV['DATABASE_URL'] %>
-    database: <%= ENV['DATABASE_NAME'] || 'backend_production' %>
-    username: <%= ENV['DATABASE_USER'] || ENV['BACKEND_DATABASE_USER'] || 'backend' %>
-    password: <%= ENV['DATABASE_PASSWORD'] || ENV['BACKEND_DATABASE_PASSWORD'] %>
-    host: <%= ENV['DATABASE_HOST'] || 'localhost' %>
-    port: <%= ENV['DATABASE_PORT'] || 5432 %>
-    # Connection pool settings for production
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    # SSL for RDS (recommended)
-    sslmode: <%= ENV.fetch('DATABASE_SSLMODE', 'prefer') %>
-  cache:
-    <<: *primary_production
-    database: <%= ENV['DATABASE_NAME'] || 'backend_production' %>_cache
-    migrations_paths: db/cache_migrate
-  queue:
-    <<: *primary_production
-    database: <%= ENV['DATABASE_NAME'] || 'backend_production' %>_queue
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *primary_production
-    database: <%= ENV['DATABASE_NAME'] || 'backend_production' %>_cable
-    migrations_paths: db/cable_migrate
+  <<: *default
+
+queue:
+  <<: *default
+
+cache:
+  <<: *default
+
+cable:
+  <<: *default

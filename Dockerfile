@@ -1,68 +1,29 @@
-# syntax=docker/dockerfile:1.6
-# Multi-stage optimized build for AWS App Runner
-FROM ruby:3.3-slim AS base
+FROM ruby:3.2
 
-# Environment setup
-ENV BUNDLE_DEPLOYMENT=1 \
-  RACK_ENV=production \
-  RAILS_ENV=production \
-  TZ=UTC \
-  RAILS_LOG_TO_STDOUT=1 \
-  RUBY_YJIT_ENABLE=1
+# Establece el entorno de Rails a producción
+ENV RAILS_ENV=production
 
-# Install runtime dependencies + postgres client + jemalloc
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  curl \
-  libpq5 \
-  libjemalloc2 \
-  libyaml-0-2 \
-  ca-certificates \
-  tzdata \
-  && rm -rf /var/lib/apt/lists/*
+# Instala dependencias del sistema
+RUN apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs
 
-# jemalloc for better memory performance
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
+# Crea y usa el directorio de la app
+WORKDIR /rails_image
 
-WORKDIR /app
-
-FROM base AS gems
-
-# Install build dependencies for native extensions
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  build-essential \
-  git \
-  libpq-dev \
-  pkg-config \
-  libyaml-dev \
-  && rm -rf /var/lib/apt/lists/*
-
+# Copia Gemfile y Gemfile.lock
 COPY Gemfile Gemfile.lock ./
-RUN bundle config set --local without 'development test' && \
-  bundle install --jobs 4 --retry 3
 
-FROM base AS app
+# Instala gems
+RUN bundle install --without development test
 
-# Copy installed gems from the gems stage
-COPY --from=gems /usr/local/bundle /usr/local/bundle
-
-# Copy application code
+# Copia el resto de la aplicación
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p tmp/pids tmp/sockets log storage && \
-  chmod +x bin/docker-entrypoint
-
-# App Runner expects the app to listen on port 8080 by default
-# But we'll use PORT env var for flexibility
-ENV PORT=3000
-
-# Expose port
+# Expone el puerto por defecto de Rails
 EXPOSE 3000
 
-# Healthcheck for App Runner (adjusts to your health endpoint)
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD curl -fsS http://127.0.0.1:${PORT}/health || exit 1
-
-# Use custom entrypoint script
-ENTRYPOINT ["bin/docker-entrypoint"]
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+# Configura el entrypoint
+COPY bin/entrypoint.sh /rails_image/entrypoint.sh
+RUN chmod +x /rails_image/entrypoint.sh
+ENTRYPOINT ["/rails_image/entrypoint.sh"]
+# Comando para iniciar el servidor
+CMD ["rails", "server", "-b", "0.0.0.0"]
