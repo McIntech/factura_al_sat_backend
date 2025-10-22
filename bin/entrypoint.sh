@@ -1,39 +1,28 @@
 #!/bin/bash
-
 set -e
 
-echo "===============Starting the application==============="
+echo "=============== Starting Rails Application ==============="
 
-if [ -n "$RAILS_ENV" ] && [ "$RAILS_ENV" = "production" ]; then
-  echo "Entorno de producción detectado."
-  # comandos para producción
+# Detectar entorno
+if [ "${RAILS_ENV}" = "production" ]; then
+  echo "🌐 Entorno: Producción"
 else
-  echo "Entorno de desarrollo detectado."
-  # otros comandos
+  echo "🧩 Entorno: Desarrollo"
 fi
 
-if [ -n "$DATABASE_URL" ]; then
-  echo "La base de datos está configurada."
-  echo "DATABASE_URL: $DATABASE_URL"
+# Verificar variables críticas
+[ -n "$DATABASE_URL" ] && echo "✅ DATABASE_URL configurada" || echo "⚠️ Falta DATABASE_URL"
+[ -n "$DEVISE_JWT_SECRET_KEY" ] && echo "✅ JWT secreto configurado" || echo "⚠️ Falta DEVISE_JWT_SECRET_KEY"
+
+if [ -n "$EMAIL" ] && [ -n "$EMAIL_PASSWORD" ] && [ -n "$SMTP_DOMAIN" ]; then
+  echo "📧 Configuración de correo lista"
 else
-  echo "La base de datos no está configurada."
+  echo "⚠️ Configuración de correo incompleta"
 fi
 
-if [ -n "$DEVISE_JWT_SECRET_KEY" ]; then
-  echo "La clave secreta JWT está configurada."
-else
-  echo "La clave secreta JWT no está configurada."
-fi
+# Migraciones
+echo "📦 Ejecutando migraciones..."
+bundle exec rails db:migrate || echo "⚠️ Error o sin cambios en migraciones"
 
-if [ -n "$EMAIL" ] && [ "$EMAIL_PASSWORD" ] && [ "$SMTP_DOMAIN" ]; then
-  echo "La configuración de correo esta lista."
-else
-  echo "La configuración de correo no está completa."
-fi
-
-echo "📦 Running database migrations..."
-bundle exec rails db:migrate
-
-echo "===============Starting the application==============="
-
+echo "🚀 Iniciando aplicación..."
 exec "$@"
