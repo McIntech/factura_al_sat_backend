@@ -6,15 +6,15 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  id-token: write # Necesario para OIDC
+  contents: read # Para checkout
+
 env:
   AWS_REGION: us-east-2
   ECR_REPOSITORY: factura_al_sat
   ECR_REGISTRY: 397753626469.dkr.ecr.us-east-2.amazonaws.com/factura_al_sat
   APP_RUNNER_SERVICE_ARN: arn:aws:apprunner:us-east-2:397753626469:service/factura_api/1de1dc0b85044feaa257b1d56675d728
-
-permissions:
-  id-token: write # requerido para OIDC
-  contents: read # para checkout
 
 jobs:
   deploy:
@@ -28,11 +28,10 @@ jobs:
       - name: 🔐 Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::397753626469:role/gh_facturaalsat # New
+          role-to-assume: arn:aws:iam::397753626469:role/gh_facturaalsat
           aws-region: ${{ env.AWS_REGION }}
 
       - name: 🔑 Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: 📦 Build, tag, and push image to Amazon ECR
@@ -40,24 +39,13 @@ jobs:
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          cd ${{ github.workspace }}
-
-          if [ ! -f "Dockerfile" ]; then
-            echo "❌ Dockerfile not found in root directory"
-            ls -la
-            exit 1
-          fi
-
           echo "🏗️ Building Docker image..."
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
           echo "⬆️ Pushing image to ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "✅ Image pushed successfully!"
 
       - name: 🚀 Deploy to App Runner
         run: |
@@ -66,24 +54,11 @@ jobs:
             --service-arn $APP_RUNNER_SERVICE_ARN \
             --region $AWS_REGION
           echo "✅ Deployment triggered successfully!"
-          echo "🔗 App Runner will automatically pull the latest image from ECR"
 
       - name: 📊 Get deployment status
         run: |
-          echo "📋 Checking service status..."
           aws apprunner describe-service \
             --service-arn $APP_RUNNER_SERVICE_ARN \
             --region $AWS_REGION \
             --query 'Service.{Status:Status,ServiceUrl:ServiceUrl}' \
             --output table
-
-      - name: 📝 Summary
-        run: |
-          echo "## 🎉 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- 🐳 **Image**: \`${{ steps.build-image.outputs.image }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- 🏷️ **Tag**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- 🌍 **Region**: \`${{ env.AWS_REGION }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- 🚀 **Service**: \`factura_api\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **App Runner** will automatically update to the new image." >> $GITHUB_STEP_SUMMARY
