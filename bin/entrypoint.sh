@@ -29,20 +29,24 @@ echo "----------------------------------------------------------"
 echo "🔍 Verificando conexión a la base de datos..."
 
 export DISABLE_DATABASE_ENVIRONMENT_CHECK=1
-echo "⚠️  DISABLE_DATABASE_ENVIRONMENT_CHECK activada (permitiendo drop en producción)"
-
-bundle exec rails db:drop db:create db:schema:load db:seed
+echo "⚠️  DISABLE_DATABASE_ENVIRONMENT_CHECK activada (permitiendo operaciones peligrosas en producción)"
 
 echo "----------------------------------------------------------"
 echo "🧠 Preparando base de datos..."
-if bundle exec rails db:version > /dev/null 2>&1; then
-  echo "📦 Migrando base existente..."
-  bundle exec rails db:migrate || echo "⚠️ Error en migraciones"
+
+if [ "${RAILS_ENV}" = "production" ]; then
+  echo "🏗️ Producción: aplicando schema o migraciones..."
+  if [ -f db/schema.rb ]; then
+    echo "📜 Schema detectado, cargando..."
+    bundle exec rails db:schema:load || bundle exec rails db:migrate
+  else
+    echo "⚠️ No se encontró schema.rb, ejecutando migraciones..."
+    bundle exec rails db:migrate
+  fi
 else
-  echo "🆕 Base nueva detectada, cargando schema..."
-  bundle exec rails db:schema:load || echo "⚠️ Error cargando schema"
-  bundle exec rails db:seed || echo "⚠️ Error en seeds"
-fi # New migration
+  echo "⚙️ Desarrollo: recreando base completa..."
+  bundle exec rails db:drop db:create db:migrate db:seed
+fi
 
 echo "----------------------------------------------------------"
 echo "🧱 Asegurando estructura temporal..."
