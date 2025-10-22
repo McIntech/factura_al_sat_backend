@@ -6,12 +6,7 @@ capybara-*.html
 !/log/.keep
 /tmp
 !/tmp/.keep
-/db/*.sqlite3
-/db/*.sqlite3-journal
-/db/schema.rb
-/db/structure.sql
-/db/*.sqlite3-shm
-/db/*.sqlite3-wal
+
 /public/system/*
 /public/uploads/*
 /storage/*
@@ -64,7 +59,7 @@ capybara-*.html
 .idea/
 .vscode/
 .DS_Store
-Thumbs.db
+
 
 # --- 🧪 Testing / coverage ---
 /coverage
