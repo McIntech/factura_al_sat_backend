@@ -24,5 +24,5 @@ fi
 echo "📦 Ejecutando migraciones..."
 bundle exec rails db:migrate || echo "⚠️ Error o sin cambios en migraciones"
 
-echo "🚀 Iniciando aplicación.."
+echo "🚀 Iniciando aplicación."
 exec "$@"
