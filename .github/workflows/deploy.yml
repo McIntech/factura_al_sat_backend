@@ -10,7 +10,7 @@ env:
   AWS_REGION: us-east-2
   ECR_REPOSITORY: factura_al_sat
   ECR_REGISTRY: 397753626469.dkr.ecr.us-east-2.amazonaws.com
-  APP_RUNNER_SERVICE_ARN: arn:aws:apprunner:us-east-2:397753626469:service/factura_api/b8be7f78afff42cfa421a8a7e8546765
+  APP_RUNNER_SERVICE_ARN: arn:aws:apprunner:us-east-2:397753626469:service/factura_api/1de1dc0b85044feaa257b1d56675d728
 
 jobs:
   deploy:

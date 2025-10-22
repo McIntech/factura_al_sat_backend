@@ -31,6 +31,9 @@ else
   echo "La configuración de correo no está completa."
 fi
 
+echo "📦 Running database migrations..."
+bundle exec rails db:migrate
+
 echo "===============Starting the application==============="
 
 exec "$@"
