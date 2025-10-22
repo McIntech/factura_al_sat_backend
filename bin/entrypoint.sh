@@ -42,7 +42,7 @@ else
   echo "🆕 Base nueva detectada, cargando schema..."
   bundle exec rails db:schema:load || echo "⚠️ Error cargando schema"
   bundle exec rails db:seed || echo "⚠️ Error en seeds"
-fi
+fi # New migration
 
 echo "----------------------------------------------------------"
 echo "🧱 Asegurando estructura temporal..."
