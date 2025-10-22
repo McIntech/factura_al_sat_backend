@@ -4,13 +4,17 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # Permite ejecutar manualmente desde GitHub
+  workflow_dispatch:
 
 env:
   AWS_REGION: us-east-2
   ECR_REPOSITORY: factura_al_sat
   ECR_REGISTRY: 397753626469.dkr.ecr.us-east-2.amazonaws.com/factura_al_sat
   APP_RUNNER_SERVICE_ARN: arn:aws:apprunner:us-east-2:397753626469:service/factura_api/1de1dc0b85044feaa257b1d56675d728
+
+permissions:
+  id-token: write # requerido para OIDC
+  contents: read # para checkout
 
 jobs:
   deploy:
@@ -21,11 +25,10 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔐 Configure AWS credentials
+      - name: 🔐 Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::397753626469:role/gh_facturaalsat # New
           aws-region: ${{ env.AWS_REGION }}
 
       - name: 🔑 Login to Amazon ECR
@@ -37,41 +40,31 @@ jobs:
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Navigate to backend directory if needed
           cd ${{ github.workspace }}
 
-          # Check if Dockerfile exists
           if [ ! -f "Dockerfile" ]; then
             echo "❌ Dockerfile not found in root directory"
-            echo "📂 Listing directory contents:"
             ls -la
             exit 1
           fi
 
-          # Build Docker image
           echo "🏗️ Building Docker image..."
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-          # Push to ECR
           echo "⬆️ Pushing image to ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-          # Output image URI for next steps
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
           echo "✅ Image pushed successfully!"
 
       - name: 🚀 Deploy to App Runner
-        id: deploy-apprunner
         run: |
           echo "🔄 Triggering App Runner deployment..."
-
-          # Start a new deployment
           aws apprunner start-deployment \
             --service-arn $APP_RUNNER_SERVICE_ARN \
             --region $AWS_REGION
-
           echo "✅ Deployment triggered successfully!"
           echo "🔗 App Runner will automatically pull the latest image from ECR"
 
