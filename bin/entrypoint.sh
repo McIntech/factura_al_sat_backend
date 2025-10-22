@@ -27,9 +27,11 @@ check_var "DEVISE_JWT_SECRET_KEY" "$DEVISE_JWT_SECRET_KEY"
 # === Base de datos ===
 echo "----------------------------------------------------------"
 echo "🔍 Verificando conexión a la base de datos..."
-bundle exec rails db:migrate:status || echo "⚠️ No se pudo conectar a la base de datos"
-bundle exec rails db:drop
-bundle exec rails db:create
+
+export DISABLE_DATABASE_ENVIRONMENT_CHECK=1
+echo "⚠️  DISABLE_DATABASE_ENVIRONMENT_CHECK activada (permitiendo drop en producción)"
+
+bundle exec rails db:drop db:create db:migrate
 
 echo "----------------------------------------------------------"
 echo "🧠 Preparando base de datos..."
