@@ -31,7 +31,7 @@ echo "🔍 Verificando conexión a la base de datos..."
 export DISABLE_DATABASE_ENVIRONMENT_CHECK=1
 echo "⚠️  DISABLE_DATABASE_ENVIRONMENT_CHECK activada (permitiendo drop en producción)"
 
-bundle exec rails db:drop db:create db:migrate
+bundle exec rails db:drop db:create db:schema:load db:seed
 
 echo "----------------------------------------------------------"
 echo "🧠 Preparando base de datos..."
