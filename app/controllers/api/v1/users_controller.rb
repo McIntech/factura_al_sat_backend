@@ -1,15 +1,15 @@
 # app/controllers/api/v1/users_controller.rb
-class Api::V1::UsersController < ApplicationController
+class Api::V1::Auth::SessionsController < Devise::SessionsController
   include UserSerialization
-  before_action :set_user, only: [ :show, :update, :destroy ]
+  before_action :set_user, only: %i[show update destroy]
 
   def index
     users = policy_scope(User)
     authorize users
-    
+
     # Usar el mismo método serialize_user para consistencia
     users_data = users.map { |user| serialize_user(user) }
-    
+
     render json: users_data
   end
 
@@ -37,13 +37,13 @@ class Api::V1::UsersController < ApplicationController
 
   def show
     authorize @user
-    
+
     # Usar el método serialize_user para mantener consistencia
     user_data = serialize_user(@user)
-    
+
     # Añadir campos adicionales específicos del endpoint show
     user_data.merge!(@user.slice(:phone, :company_name, :state))
-    
+
     render json: user_data
   end
 
@@ -62,11 +62,13 @@ class Api::V1::UsersController < ApplicationController
     else
       # Si no tiene cuenta ni es admin, solo puede ver su propia información
       raise ActiveRecord::RecordNotFound unless params[:id].to_i == current_user.id
+
       @user = current_user
     end
   end
 
   def user_params
-    params.require(:user).permit(:email, :first_name, :last_name, :admin, :active, :password, :password_confirmation, :letterhead, :letterhead_filename, :state, :company_name, :phone)
+    params.require(:user).permit(:email, :first_name, :last_name, :admin, :active, :password, :password_confirmation,
+                                 :letterhead, :letterhead_filename, :state, :company_name, :phone)
   end
 end

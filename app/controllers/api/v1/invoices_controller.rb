@@ -171,11 +171,67 @@ class Api::V1::InvoicesController < ApplicationController
       user = User.new(
         email: email,
         phone: recipient_data[:phone].to_s,  # Asegurarse de que sea string incluso si es nil
-        subscribed: false  # Valor por defecto, ajusta según tu lógica de negocio
+        subscribed: false,  # Valor por defecto, ajusta según tu lógica de negocio
+        password: SecureRandom.hex(10)  # Generar contraseña aleatoria para que el usuario pueda iniciar sesión
       )
-      user.save
+      
+      # Intentar guardar el usuario
+      if user.save
+        Rails.logger.info("Usuario creado con éxito: #{user.email}")
+      else
+        Rails.logger.error("Error al crear usuario: #{user.errors.full_messages.join(', ')}")
+        # Si hay errores, usar un usuario existente
+        user = User.first
+      end
     end
 
+    # Después de obtener o crear el usuario, también almacenar los datos en la tabla Persona
+    create_or_update_persona(recipient_data, user)
+
     user
+  end
+
+  def create_or_update_persona(recipient_data, user)
+    begin
+      # Buscar si ya existe una persona con ese RFC
+      rfc = recipient_data[:tin]
+      persona = Persona.find_by(rfc: rfc)
+
+      if persona
+        # Actualizar datos de la persona
+        persona.update!(
+          razon_social: recipient_data[:legalName],
+          email: recipient_data[:email],
+          codigo_postal: recipient_data[:zipCode],
+          regimen_fiscal: recipient_data[:taxRegimeCode],
+          uso_cfdi: recipient_data[:cfdiUseCode],
+          user_id: user.id
+        )
+        Rails.logger.info("Persona actualizada con éxito: #{persona.rfc}")
+      else
+        # Crear nueva persona
+        persona = Persona.new(
+          rfc: rfc,
+          razon_social: recipient_data[:legalName],
+          email: recipient_data[:email],
+          tipo_persona: rfc.length == 12 ? "MORAL" : "FISICA", # Determinar tipo de persona basado en longitud del RFC
+          codigo_postal: recipient_data[:zipCode],
+          regimen_fiscal: recipient_data[:taxRegimeCode],
+          uso_cfdi: recipient_data[:cfdiUseCode],
+          user_id: user.id
+        )
+        
+        if persona.save
+          Rails.logger.info("Persona creada con éxito: #{persona.rfc}")
+        else
+          Rails.logger.error("Error al crear persona: #{persona.errors.full_messages.join(', ')}")
+        end
+      end
+
+      return persona
+    rescue => e
+      Rails.logger.error("Error en create_or_update_persona: #{e.message}")
+      return nil
+    end
   end
 end

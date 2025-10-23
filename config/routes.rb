@@ -1,9 +1,8 @@
-# config/routes.rb
 Rails.application.routes.draw do
   # Health check endpoint
   get 'up' => 'rails/health#show', as: :rails_health_check
 
-  # Devise routes for User model with custom paths and controllers
+  # === Devise: autenticación JSON bajo /api/v1/auth === #
   devise_for :users,
              defaults: { format: :json },
              path: 'api/v1/auth',
@@ -19,10 +18,13 @@ Rails.application.routes.draw do
                sign_up: 'signup'
              }
 
-  # API namespace
+  # === API principal === #
   namespace :api do
     namespace :v1 do
+      # Usuarios
       resources :users, only: %i[index create update destroy show]
+
+      # Facturas (Invoices)
       resources :invoices, only: %i[index create update destroy show] do
         collection do
           get 'rfc/:rfc', to: 'invoices#find_by_rfc'
@@ -30,13 +32,22 @@ Rails.application.routes.draw do
           post 'send_email', to: 'invoice_mailer#send_email'
         end
       end
+
+      # Personas (emisores/receptores)
+      resources :personas do
+        collection do
+          get 'rfc/:rfc', to: 'personas#find_by_rfc'
+        end
+      end
+
+      # Validación de token JWT
       get '/auth/validate_token', to: 'auth#validate_token'
+
       # Proxy para imágenes con CORS
       get '/images/proxy', to: 'images#proxy'
+
       # Test email route
       get '/test_email', to: 'test_mailer#test_email'
     end
-    # API v1 (sin namespacing específico)
-    resources :personas
   end
 end
