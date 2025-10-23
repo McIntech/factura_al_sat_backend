@@ -1,21 +1,27 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
-
-# Crear usuario administrador si no existe
-unless User.find_by(email: 'admin@cardiologiadelnorte.com')
+# db/seeds.rb
+if User.find_by(email: 'admin@cardiologiadelnorte.com')
+  puts 'El usuario administrador ya existe.'
+else
   User.create!(
     email: 'admin@cardiologiadelnorte.com',
     password: 'cArdioNort!',
-    password_confirmation: 'cArdioNort!'
+    password_confirmation: 'cArdioNort!',
+    first_name: 'Admin',
+    last_name: 'Principal'
   )
-  puts "Usuario administrador creado exitosamente."
+  puts 'Usuario administrador creado exitosamente.'
+end
+
+# db/seeds.rb
+if User.find_by(email: 'test+1760645754197@example.com')
+  puts 'El usuario prueba ya existe.'
 else
-  puts "El usuario administrador ya existe."
+  User.create!(
+    email: 'test+1760645754197@example.com',
+    password: 'Test#12345',
+    password_confirmation: 'Test#12345',
+    first_name: 'Test',
+    last_name: 'User'
+  )
+  puts 'Usuario de prueba creado exitosamente.'
 end

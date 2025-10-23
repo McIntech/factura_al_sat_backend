@@ -39,6 +39,7 @@ if [ "${RAILS_ENV}" = "production" ]; then
   if [ -f db/schema.rb ]; then
     echo "📜 Schema detectado, cargando..."
     bundle exec rails db:schema:load || bundle exec rails db:migrate
+    bundle exec rails db:seed
   else
     echo "⚠️ No se encontró schema.rb, ejecutando migraciones..."
     bundle exec rails db:migrate
