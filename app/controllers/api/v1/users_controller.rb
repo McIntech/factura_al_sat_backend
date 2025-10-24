@@ -1,5 +1,5 @@
 # app/controllers/api/v1/users_controller.rb
-class Api::V1::Auth::SessionsController < Devise::SessionsController
+class Api::V1::UsersController < ApplicationController
   include UserSerialization
   before_action :set_user, only: %i[show update destroy]
 
