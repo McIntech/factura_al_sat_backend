@@ -168,16 +168,37 @@ class Api::V1::InvoicesController < ApplicationController
 
     # Si no existe, crear nuevo usuario
     unless user
+      # Extraer first_name y last_name del legalName
+      legal_name = recipient_data[:legalName].to_s.strip
+      first_name = legal_name
+      last_name = ""
+      
+      if legal_name.present?
+        name_parts = legal_name.split(/\s+/)
+        
+        if name_parts.length > 1 && name_parts.any? { |part| part != part.upcase }
+          # Parece ser persona física (tiene mayúsculas y minúsculas mezcladas)
+          first_name = name_parts.first
+          last_name = name_parts[1..-1].join(" ")
+        end
+        # Si es todo mayúsculas o un solo nombre, usar como first_name completo
+      else
+        # Si no hay legalName, usar la parte antes del @ del email
+        first_name = email.to_s.split('@').first || "Usuario"
+      end
+      
       user = User.new(
         email: email,
-        phone: recipient_data[:phone].to_s,  # Asegurarse de que sea string incluso si es nil
-        subscribed: false,  # Valor por defecto, ajusta según tu lógica de negocio
-        password: SecureRandom.hex(10)  # Generar contraseña aleatoria para que el usuario pueda iniciar sesión
+        first_name: first_name,
+        last_name: last_name,
+        phone: recipient_data[:phone].to_s,
+        subscribed: false,
+        password: SecureRandom.hex(10)
       )
       
       # Intentar guardar el usuario
       if user.save
-        Rails.logger.info("Usuario creado con éxito: #{user.email}")
+        Rails.logger.info("Usuario creado con éxito: #{user.email} (#{first_name} #{last_name})")
       else
         Rails.logger.error("Error al crear usuario: #{user.errors.full_messages.join(', ')}")
         # Si hay errores, usar un usuario existente
