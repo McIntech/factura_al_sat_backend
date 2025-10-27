@@ -2,12 +2,12 @@ class User < ApplicationRecord
   # En desarrollo y producción, puede haber usuarios sin tenant si son administradores raíz
   belongs_to :account, optional: true
   has_many :personas, dependent: :destroy
-  
+
   # ActiveStorage attachment for letterhead template
   has_one_attached :letterhead
 
   # --- 📋 Validaciones ---
-  validates :first_name, :last_name, presence: true
+  validates :first_name, :last_name, presence: false
 
   # Unicidad de email global, ignorando tenant (evita duplicados entre cuentas)
   validates :email,
@@ -32,7 +32,7 @@ class User < ApplicationRecord
   end
 
   def self.jwt_revoked?(payload, user)
-    token_jti = payload["jti"]
+    token_jti = payload['jti']
     user_jti = user.jti
     Rails.logger.info "JWT Verification - Token JTI: #{token_jti}, User JTI: #{user_jti}"
 

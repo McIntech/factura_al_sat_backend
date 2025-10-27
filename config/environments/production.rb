@@ -61,12 +61,14 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
     address: ENV['SMTP_SERVER'] || 'smtp.gmail.com',
-    port: ENV['SMTP_PORT'] || 587,
-    domain: ENV['SMTP_DOMAIN'] || ENV['DOMAIN'] || 'fiscalapi.com',
+    port: Integer(ENV['SMTP_PORT'] || '587'),
+    domain: ENV['SMTP_DOMAIN'] || 'gmail.com',
     user_name: ENV['EMAIL'],
-    password: ENV['EMAIL_PASSWORD'],
+    password: ENV['EMAIL_APP_PASSWORD'] || ENV['EMAIL_PASSWORD'],
     authentication: 'plain',
-    enable_starttls_auto: true
+    enable_starttls_auto: true,
+    # Relajar verificación SSL para contenedores sin certificados CA actualizados
+    openssl_verify_mode: OpenSSL::SSL::VERIFY_NONE
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
